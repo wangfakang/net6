@@ -1,0 +1,6 @@
+{
+  "name": "Net6",
+  "tagline": "lost ack at the last handshake packet",
+  "body": "   #三次握手中最后一次的ack丢失的原因：\r\n   \r\n   在三次握手中，若：客户端已经发送了最后的ack确认包给服务端后，最后客户端又收到服务端的syn包，则说明服务端没有收到最后的ack包\r\n此时客户端已经完成了三次握手，但是服务端取还处于syn_recve状态的半连接状态；（这个时候对于nginx来说，已经建立了连接，处于发送数\r\n据的状态所以注意不会是proxy_connect_timeout而是会发生proxy_read_timeout）；\r\n\r\n   在这种情况下，如果不是网络原因的话，那就是服务端的已连接队列已经满了；那么问题就来了，已连接队列怎么计算？\r\n\r\n   已连接队列 = min（listen queue，net.core.somaxconn） 其中listen queue在nginx的配置是listen 后面的backlog参数，\r\n其中net.core.somaxconn系统默认为128；\r\n\r\n   其中半连接队列 = max(tcp_max_syn_backlog, 64))，用来保存 SYN_SENT 以及 SYN_RECV 的信息；\r\n\r\n\r\n   # 其中执行ss -ln后的输出Recv-Q、Send-Q的含义：    \r\n   listen 状态:\r\n   =====\r\n   \r\n      Recv-Q 表示的当前等待服务端调用 accept 完成三次握手的 listen backlog 数值，也就是说，当客户端通过 connect() 去连接正在\r\n    listen() 的服务端时，这些连接会一直处于这个 queue 里面直到被服务端 accept()；           \r\n    \r\n      Send-Q 表示的则是最大的 listen backlog 数值，这就是 min(backlog, somaxconn) 的值；\r\n\r\n   非 listen 状态：\r\n   =====\r\n      Recv-Q 表示 receive queue 中的 bytes 数量；    \r\n      Send-Q 表示 send queue 中的 bytes 数值；\r\n\r\n\r\n   \r\n\r\n\r\n",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
